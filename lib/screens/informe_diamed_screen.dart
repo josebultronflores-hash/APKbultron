@@ -1796,158 +1796,239 @@ class _InformeDiamedScreenState extends State<InformeDiamedScreen> {
   }
 
   Widget _tablaSemanaGira() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (!rangoFechasSeleccionado)
-          Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.orange.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: Colors.orange.withValues(alpha: 0.35),
-              ),
-            ),
-            child: const Text(
-              'Seleccione primero el rango de fechas de la gira. '
-              'Luego se habilitarán solo los días correspondientes.',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.orange,
-              ),
+  const double anchoColumnaFija = 92;
+  const double anchoDia = 100;
+  const double altoEncabezado = 34;
+  const double altoFilaFecha = 50;
+  const double altoFilaLugar = 52;
+  const double fontSizeTabla = 14;
+
+  Widget celdaFija({
+    required Widget child,
+    required double height,
+    Color? color,
+    Alignment alignment = Alignment.centerLeft,
+  }) {
+    return Container(
+      width: anchoColumnaFija,
+      height: height,
+      alignment: alignment,
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+      decoration: BoxDecoration(
+        color: color,
+        border: Border.all(color: Colors.black12),
+      ),
+      child: child,
+    );
+  }
+
+  Widget celdaDia({
+    required Widget child,
+    required double height,
+    Color? color,
+    Alignment alignment = Alignment.center,
+  }) {
+    return Container(
+      width: anchoDia,
+      height: height,
+      alignment: alignment,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: color,
+        border: Border.all(color: Colors.black12),
+      ),
+      child: child,
+    );
+  }
+
+  Widget campoFechaDia(int index) {
+    final bool habilitado = _diaHabilitado(index);
+
+    return TextFormField(
+      controller: fechaDiaControllers[index],
+      readOnly: true,
+      textAlign: TextAlign.center,
+      style: const TextStyle(
+        fontSize: fontSizeTabla,
+      ),
+      onTap: _seleccionarRangoFechasGira,
+      decoration: InputDecoration(
+        isDense: true,
+        border: const OutlineInputBorder(),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 4,
+          vertical: 7,
+        ),
+        suffixIcon: Icon(
+          habilitado ? Icons.check_circle : Icons.calendar_month,
+          size: 16,
+          color: habilitado ? Colors.green : null,
+        ),
+        suffixIconConstraints: const BoxConstraints(
+          minWidth: 24,
+          minHeight: 22,
+        ),
+        filled: true,
+        fillColor: habilitado
+            ? Colors.green.withValues(alpha: 0.08)
+            : Colors.white,
+      ),
+    );
+  }
+
+  Widget campoLugarDia(int index) {
+    final bool habilitado = _diaHabilitado(index);
+
+    return TextFormField(
+      controller: lugarDiaControllers[index],
+      enabled: habilitado,
+      textAlign: TextAlign.center,
+      style: const TextStyle(
+        fontSize: fontSizeTabla,
+      ),
+      onChanged: (_) => setState(() {}),
+      decoration: InputDecoration(
+        isDense: true,
+        border: const OutlineInputBorder(),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 4,
+          vertical: 7,
+        ),
+        filled: true,
+        fillColor: habilitado ? Colors.white : Colors.grey.shade100,
+      ),
+    );
+  }
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      if (!rangoFechasSeleccionado)
+        Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.orange.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: Colors.orange.withValues(alpha: 0.35),
             ),
           ),
-        if (rangoFechasSeleccionado)
-          Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.green.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: Colors.green.withValues(alpha: 0.35),
-              ),
-            ),
-            child: Text(
-              'Rango seleccionado: '
-              '${DateFormat('dd/MM/yyyy').format(fechaInicioGira!)} '
-              'al ${DateFormat('dd/MM/yyyy').format(fechaFinGira!)}',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.green.shade800,
-              ),
+          child: const Text(
+            'Seleccione primero el rango de fechas de la gira. '
+            'Luego se habilitarán solo los días correspondientes.',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: Colors.orange,
             ),
           ),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Table(
-            border: TableBorder.all(color: Colors.black12),
-            defaultColumnWidth: const FixedColumnWidth(115),
+        ),
+
+      if (rangoFechasSeleccionado)
+        Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.green.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: Colors.green.withValues(alpha: 0.35),
+            ),
+          ),
+          child: Text(
+            'Rango seleccionado: '
+            '${DateFormat('dd/MM/yyyy').format(fechaInicioGira!)} '
+            'al ${DateFormat('dd/MM/yyyy').format(fechaFinGira!)}',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: Colors.green.shade800,
+            ),
+          ),
+        ),
+
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Column(
             children: [
-              TableRow(
-                decoration: const BoxDecoration(
-                  color: Color(0xFFEAF2FF),
+              celdaFija(
+                height: altoEncabezado,
+                color: const Color(0xFFEAF2FF),
+                alignment: Alignment.center,
+                child: const SizedBox(),
+              ),
+              celdaFija(
+                height: altoFilaFecha,
+                alignment: Alignment.centerLeft,
+                child: const Text(
+                  'Fecha',
+                  style: TextStyle(
+                    fontSize: fontSizeTabla,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                children: [
-                  const SizedBox(),
-                  ...List.generate(7, (index) {
-                    final bool habilitado = _diaHabilitado(index);
-
-                    return Container(
-                      color: habilitado
-                          ? Colors.green.withValues(alpha: 0.10)
-                          : Colors.transparent,
-                      padding: const EdgeInsets.all(8),
-                      child: Text(
-                        diasLargos[index],
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: habilitado
-                              ? Colors.green.shade800
-                              : Colors.black87,
-                        ),
-                      ),
-                    );
-                  }),
-                ],
               ),
-              TableRow(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: Text(
-                      'Fecha',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
+              celdaFija(
+                height: altoFilaLugar,
+                alignment: Alignment.centerLeft,
+                child: const Text(
+                  'Lugar /\nProvincia',
+                  style: TextStyle(
+                    fontSize: fontSizeTabla,
+                    fontWeight: FontWeight.w600,
+                    height: 1.05,
                   ),
-                  ...List.generate(7, (index) {
-                    final bool habilitado = _diaHabilitado(index);
-
-                    return Padding(
-                      padding: const EdgeInsets.all(6),
-                      child: TextFormField(
-                        controller: fechaDiaControllers[index],
-                        readOnly: true,
-                        onTap: _seleccionarRangoFechasGira,
-                        decoration: InputDecoration(
-                          isDense: true,
-                          border: const OutlineInputBorder(),
-                          suffixIcon: Icon(
-                            habilitado
-                                ? Icons.check_circle
-                                : Icons.calendar_month,
-                            size: 16,
-                            color: habilitado ? Colors.green : null,
-                          ),
-                          filled: true,
-                          fillColor: habilitado
-                              ? Colors.green.withValues(alpha: 0.08)
-                              : Colors.white,
-                        ),
-                      ),
-                    );
-                  }),
-                ],
-              ),
-              TableRow(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: Text(
-                      'Lugar / Provincia',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                  ...List.generate(7, (index) {
-                    final bool habilitado = _diaHabilitado(index);
-
-                    return Padding(
-                      padding: const EdgeInsets.all(6),
-                      child: TextFormField(
-                        controller: lugarDiaControllers[index],
-                        enabled: habilitado,
-                        onChanged: (_) => setState(() {}),
-                        decoration: InputDecoration(
-                          isDense: true,
-                          border: const OutlineInputBorder(),
-                          filled: true,
-                          fillColor:
-                              habilitado ? Colors.white : Colors.grey.shade100,
-                        ),
-                      ),
-                    );
-                  }),
-                ],
+                ),
               ),
             ],
           ),
-        ),
-      ],
-    );
-  }
+
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: List.generate(7, (index) {
+                  final bool habilitado = _diaHabilitado(index);
+
+                  return Column(
+                    children: [
+                      celdaDia(
+                        height: altoEncabezado,
+                        color: habilitado
+                            ? Colors.green.withValues(alpha: 0.10)
+                            : const Color(0xFFEAF2FF),
+                        child: Text(
+                          diasLargos[index],
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: fontSizeTabla,
+                            fontWeight: FontWeight.bold,
+                            color: habilitado
+                                ? Colors.green.shade800
+                                : Colors.black87,
+                          ),
+                        ),
+                      ),
+                      celdaDia(
+                        height: altoFilaFecha,
+                        child: campoFechaDia(index),
+                      ),
+                      celdaDia(
+                        height: altoFilaLugar,
+                        child: campoLugarDia(index),
+                      ),
+                    ],
+                  );
+                }),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
+}
 
   Widget _campoMontoTabla(
     FilaGasto row,
